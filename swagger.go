@@ -149,17 +149,25 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 			c.Header("Content-Type", "application/json; charset=utf-8")
 		}
 
+		match, err := regexp.Match(`^[vV][\d\.]+$`, []byte(path))
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		if match {
+			doc, err := swag.ReadDoc(path)
+			if err != nil {
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+			c.Writer.Write([]byte(doc))
+			return
+		}
+
 		switch path {
 		case "index.html":
 			_ = index.Execute(c.Writer, config.ToSwaggerConfig())
-		case "doc.json":
-			doc, err := swag.ReadDoc(config.InstanceName)
-			if err != nil {
-				c.AbortWithStatus(http.StatusInternalServerError)
-
-				return
-			}
-			_, _ = c.Writer.Write([]byte(doc))
 		default:
 			handler.ServeHTTP(c.Writer, c.Request)
 		}
