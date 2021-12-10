@@ -1,4 +1,4 @@
-module github.com/swaggo/gin-swagger
+module github.com/jianbo-zh/gin-swagger
 
 require (
 	github.com/gin-contrib/gzip v0.0.3
