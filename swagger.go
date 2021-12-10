@@ -120,7 +120,8 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 	t := template.New("swagger_index.html")
 	index, _ := t.Parse(swagger_index_templ)
 
-	var rexp = regexp.MustCompile(`(.*)(index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[\?|.]*`)
+	// support multi-version api match
+	var rexp = regexp.MustCompile(`(.*)([vV][\d\.]+[\d]|index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[\?|.]*`)
 
 	return func(c *gin.Context) {
 		matches := rexp.FindStringSubmatch(c.Request.RequestURI)
@@ -149,7 +150,8 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 			c.Header("Content-Type", "application/json; charset=utf-8")
 		}
 
-		match, err := regexp.Match(`^[vV][\d\.]+$`, []byte(path))
+		// support multi-version api match
+		match, err := regexp.Match(`^[vV][\d\.]+[\d]$`, []byte(path))
 		if err != nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
@@ -168,6 +170,13 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 		switch path {
 		case "index.html":
 			_ = index.Execute(c.Writer, config.ToSwaggerConfig())
+		case "doc.json":
+			doc, err := swag.ReadDoc(config.InstanceName)
+			if err != nil {
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+			_, _ = c.Writer.Write([]byte(doc))
 		default:
 			handler.ServeHTTP(c.Writer, c.Request)
 		}
