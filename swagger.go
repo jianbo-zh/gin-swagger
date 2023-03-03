@@ -130,7 +130,7 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 	index, _ := template.New("swagger_index.html").Parse(swaggerIndexTpl)
 
 	// support multi-version api match
-	var matcher = regexp.MustCompile(`(.*)([vV][\d\.]+[\d]|index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[?|.]*`)
+	var matcher = regexp.MustCompile(`(.*)([vV][\d_]+[\d]|index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[?|.]*`)
 
 	return func(ctx *gin.Context) {
 		if ctx.Request.Method != http.MethodGet {
@@ -166,7 +166,7 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 		}
 
 		// support multi-version api match
-		match, err := regexp.Match(`^[vV][\d\.]+[\d]$`, []byte(path))
+		match, err := regexp.Match(`^[vV][\d_]+[\d]$`, []byte(path))
 		if err != nil {
 			ctx.AbortWithStatus(http.StatusInternalServerError)
 			return
